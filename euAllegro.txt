@@ -1,0 +1,1965 @@
+euAllegro Reference Manual
+By Ray Smith 30-Nov-2000
+--------------------------
+
+NOTE: A lot of the the function refernce is copied and pasted from the 
+Allegro, PPCol, Mappy, JGMOD and Libnet documentation and modified for 
+use with euAllegro wrapepr.
+
+
+
+INTRODUCTION:
+
+This guide will give you a quick introduction on how to use euAllegro in 
+your programs followed by a description of each function available.
+
+
+
+FIRST THINGS FIRST:
+
+I usually start a new project in a new directory and copy euAllegro.ew, 
+euall.dll and all3933.dll into the new directory.
+These files are always required.
+
+Alternatively, you can copy the DLL files into your \windows\system 
+directory if you prefer (or anywhere in your path) and copy the 
+euallegro.ew include file into \euphoria\include directory.
+
+My preference is to always keep all non standard files in a project
+directory ... but that's just *my* preference.
+
+
+
+THE BASIC STRUCTURE:
+
+This is the skeleton of a typical euAllegro program.
+
+---------------------------------------
+include euallegro.ew
+integer ret	 
+ret = allegro_init()
+ret = install_keyboard()
+ret = set_gfx_mode(GFX_SAFE, 320, 200, 0, 0) 
+
+... do stuff 
+
+allegro_exit()
+
+---------------------------------------
+
+
+The basic euAllegro program will 
+
+* include "euallegro.ew",
+
+* initialise Allegro with allegro_init(), 
+
+* Install the keyboard handler with install_keyboard(),
+
+* Set the graphics mode with set_gfx_mode(...), and
+
+* close Allegro down with allegro_exit()
+
+
+See euHello.exw for the infamous Hello World example.
+
+Other common init commands are install_timer() and install_mouse().o
+
+I'm no teacher and would be interested in what ways people learn to 
+use euAllegro and what their experiences are.  I guess I'd suggest:
+
+* a quick browse of the function reference below, 
+* browse the example programs to see what ieuAllegro can do,
+* (optinal) make some changes to the example programs to learn,
+* start writing your own small demos / games referring to the function 
+reference and examples where required.
+
+
+
+
+FUNCTION REFERENCE:
+
+(Note: Only the main commands are described here as it is a huge job to
+document them all.  I will eventually get it all documented but not in the 
+near future.  There are enough commands here to allow you to write full 
+featured all singing, all dancing euAllegro games.
+If you want more info you can look at euAllegro.ew file and see what other
+commands are available ... or send me an email and ask me.)
+
+I'll try and stick as close as possible to the Euphoria documentation 
+standards. As an addition the command arguements will have a meaningful name
+prefixed with the predefined Euphoria data types of:
+	s - sequence,
+	a - atom, and
+	i - integer
+Also Note that most of the Examples aren't fully working examples but just 
+snipets of code showing how the function is used.
+
+
+COMMAND SUMMARY:
+
+General Routines:
+allegro_init
+allegro_exit
+allegro_message
+
+Mouse Routines:
+install_mouse
+remove_mouse
+mouse_x
+mouse_y
+mouse_z
+mouse_b
+mouse_pos
+show_mouse
+set_mouse_speed
+set_mouse_sprite
+set_mouse_sprite_focus
+
+Timer Routines:
+install_timer
+remove_timer
+install_int
+remove_int
+rest
+
+Keyboard Routines:
+install_keyboard
+remove_keyboard
+key
+keypressed
+readkey
+clear_keybuf
+
+Graphics mode Routines:
+set_gfx_mode
+SCREEN_W
+SCREEN_H
+VIRTUAL_W
+VIRTUAL_H
+
+Bitmap Routines:
+SCREEN
+create_bitmap 
+bitmap_w 
+bitmap_h
+destroy_bitmap
+acquire_bitmap
+release_bitmap
+acquire_screen
+release_screen
+
+Load Image File Routines:
+load_bitmap 
+
+Palette Routines:
+vsync
+set_palette
+default_palette
+black_palette
+desktop_palette
+allocate_palette
+allocate_sequence_palette
+destroy_palette
+sequence_to_palette
+palette_to_sequence
+
+Drawing Primitive Routines:
+putpixel 
+getpixel   
+vline 
+hline 
+line   
+triangle
+rect
+rectfill
+circle
+circlefill
+ellipse
+ellipsefill
+arc
+floodfill
+
+Blitting and Sprite Routines:
+clear
+clear_to_color
+blit
+masked_blit
+stretch_blit
+masked_stretch_blit
+draw_sprite
+draw_sprite_v_flip
+draw_sprite_h_flip
+draw_sprite_vh_flip
+draw_trans_sprite 
+rotate_sprite
+rotate_scaled_sprite
+rotate_sprite_v_flip
+stretch_sprite
+
+Text Output Routines:
+FONT
+text_mode 
+textout
+textout_centre 
+textout_right 
+textprintf
+textprintf_centre
+textprintf_right
+text_length 
+text_height 
+destroy_font 
+
+Sound Init Routines:
+install_sound
+remove_sound
+set_volume
+detect_digi_driver
+detect_midi_driver
+reserve_voices
+
+Digital Sample Routines:
+load_sample
+destroy_sample 
+play_sample 
+adjust_sample 
+stop_sample 
+
+Midi Music Routines:
+load_midi 
+destroy_midi
+play_midi 
+play_looped_midi 
+stop_midi 
+midi_pause 
+midi_resume 
+
+Datafile Routines:
+load_datafile
+get_datafile_dat
+
+GUI Routines:
+alert
+
+
+
+------------------------<allegro_init>------------------------------------
+
+Syntax:
+   iRet = allegro_init()
+
+Description:	
+   Initialises the Allegro library. Returns 0 on success.
+
+Comments:
+   The offical Allegro examples don't check the returned value but I suggest 
+   you probably should to ensure it was successful.
+
+Example:
+   integer iRet
+   iRet = allegro_init()
+   if iRet != 0 then  
+      --   .. failure
+   end if
+
+
+------------------------<allegro_exit>------------------------------------
+
+Syntax:
+   allegro_exit()
+
+Description:	
+   Closes down the Allegro system.
+
+Comments:	
+   This is *required* in Euphoria.  In C this is called automatically if you 
+   don't specifically call it. But in Euphoria you must specifically call 
+   this routine to close Allegro.
+
+Example:	
+   allegro_exit()
+
+
+------------------------<allegro_message>------------------------------------
+
+Syntax:
+   allegro_message(sMsg, sParms)
+
+Description:	
+   Outputs a message, using a printf() format string. This function must only be 
+   used when you aren't in graphics mode, eg. before calling set_gfx_mode(), or 
+   after a set_gfx_mode(GFX_TEXT)
+
+Comments:	
+   sMsg and sParms are sequences that gets passed to sprintf to produce a string 
+   of text for display.
+
+Example:	
+   allegro_message("Error Number was %d", {errno} )
+
+
+------------------------<install_mouse>--------------------------------
+
+Syntax: 	
+   iRet = install_mouse()
+
+Description:	
+   Installs the Allegro mouse handler. You must do this before using any 
+   other mouse functions. Returns -1 on failure, otherwise the number of 
+   buttons on the mouse.
+
+Comments:	
+   none
+
+Example:	
+   integer iRet
+   iRet = install_mouse()
+   if iRet = 0 then 
+      --   .. failure
+   end if
+
+
+------------------------<remove_mouse>--------------------------------
+
+Syntax: 	
+   remove_mouse()
+
+Description:	
+   Removes the mouse handler. You don't normally need to bother calling 
+   this, because allegro_exit() will do it for you.
+
+Comments:	
+   none
+
+Example:	
+   remove_mouse()
+
+
+------------------------<mouse_x>--------------------------------
+------------------------<mouse_y>--------------------------------
+------------------------<mouse_z>--------------------------------
+------------------------<mouse_b>--------------------------------
+------------------------<mouse_pos>--------------------------------
+
+Syntax: 	
+iRet = mouse_x()
+iRet = mouse_y()
+iRet = mouse_z()
+iRet = mouse_b()
+iRet = mouse_pos()
+
+
+Description:	
+   Functions that return the current mouse position and button state. 
+   Wherever possible these values will be updated asynchronously, but if 
+   mouse_needs_poll() returns TRUE, you must manually call poll_mouse() to 
+   update them with the current input state. The mouse_x and mouse_y 
+   positions are integers ranging from zero to the bottom right corner of 
+   the screen. The mouse_z variable holds the current wheel position, when 
+   using an input driver that supports wheel mice. The mouse_b variable is a 
+   bitfield indicating the state of each button: bit 0 is the left button, 
+   bit 1 the right, and bit 2 the middle button. For example:
+
+      if (mouse_b & 1)
+	 printf("Left button is pressed\n");
+
+      if (!(mouse_b & 2))
+	 printf("Right button is not pressed\n");
+
+   The mouse_pos variable has the current X coordinate in the high word and 
+   the Y in the low word. This may be useful in tight polling loops where a 
+   mouse interrupt could occur between your reading of the two separate 
+   variables, since you can copy this value into a local variable with a 
+   single instruction and then split it up at your leisure.
+
+Comments:	
+
+Example:	
+   integer x
+   x = mouse_x()
+
+
+------------------------<show_mouse>--------------------------------
+
+Syntax: 	
+   show_mouse()
+
+Description:	
+   Tells Allegro to display a mouse pointer on the screen. This will only 
+   work if the timer module has been installed. The mouse pointer will be 
+   drawn onto the specified bitmap, which should normally be 'screen' (see 
+   later for information about bitmaps). To hide the mouse pointer, call 
+   show_mouse(NULL). Warning: if you draw anything onto the screen while the 
+   pointer is visible, a mouse movement interrupt could occur in the middle 
+   of your drawing operation. If this happens the mouse buffering and SVGA 
+   bank switching code will get confused and will leave 'mouse droppings' 
+   all over the screen. To prevent this, you must make sure you turn off the 
+   mouse pointer whenever you draw onto the screen.
+
+Comments:	
+   none
+
+Example:	
+   show_mouse()
+
+
+------------------------<set_mouse_speed>--------------------------------
+
+Syntax: 	
+   set_mouse_speed(iXspeed, iYspeed)
+
+Description:	
+   Sets the mouse speed. Larger values of Xspeed and Yspeed represent slower 
+   mouse movement: the default for both is 2.
+
+Comments:	
+   none
+
+Example:	
+   set_mouse_speed(4, 3)
+
+
+------------------------<set_mouse_sprite>--------------------------------
+
+Syntax: 	
+   set_mouse_sprite(aSprite)
+
+Description:	
+   You don't like my mouse pointer? No problem. Use this function to supply 
+   an alternative of your own. If you change the pointer and then want to 
+   get my lovely arrow back again, call set_mouse_sprite(NULL).
+
+Comments:	
+   none
+
+Example:	 
+   atom aMybmp
+   -- load or create a bmp
+   set_mouse_sprite(aMybmp)
+
+
+------------------------<set_mouse_sprite_focus>------------------------------
+
+Syntax: 	
+   set_mouse_sprite_focus(iX, iY)
+
+Description:	
+   The mouse focus is the bit of the pointer that represents the actual 
+   mouse position, ie. the ( mouse_x(), mouse_y() ) position. By default this 
+   is the top left corner of the arrow, but if you are using a different mouse
+   pointer you might need to alter it.
+
+Comments:	
+   none
+
+Example:	
+   set_mouse_sprite_focus(0, 16)
+
+
+------------------------<install_timer>--------------------------------
+
+Syntax: 	
+   iRet = install_timer()
+
+Description:	
+   Installs the Allegro timer interrupt handler. You must do this before 
+   installing any user timer routines, and also before displaying a mouse 
+   pointer, playing FLI animations or MIDI music, and using any of the GUI 
+   routines.
+
+
+Comments:	
+
+Example:	
+integer iRet
+iRet = install_timer()
+if iRet != 0 then 
+   .. failure
+end if
+
+
+------------------------<remove_timer>--------------------------------
+
+Syntax: 	
+   remove_timer()
+
+Description:	
+   Removes the Allegro timer handler and passes control of the clock back to 
+   the operating system. You don't normally need to bother calling this, 
+   because allegro_exit() will do it for you.
+
+Comments:	
+
+Example:	
+remove_timer()
+
+
+------------------------<install_int>--------------------------------
+
+Syntax: 	
+   iRet = install_int(iProc, iSpeed)
+
+Description:	
+   Installs a user timer handler, with the speed given as the number of 
+   milliseconds between ticks. If you call this routine without having 
+   first installed the timer module, install_timer() will be called 
+   automatically.
+
+Comments:	
+   iProc is an integer value returned by routine_id.
+
+Example:
+   integer iRet
+   function inc_x()
+      x += 1
+      return 1
+   end function
+
+   iRet = install_int(routine_id("inc_x"), 1000)
+
+   See euTimer.exw for a complete example 
+
+
+------------------------<remove_int>--------------------------------
+
+Syntax: 	
+   remove_int(iProc)
+
+Description:	
+   Removes a function from the list of user interrupt routines. At program 
+   termination, allegro_exit() does this automatically.
+
+Comments:	
+   iProc is an integer value returned by routine_id.
+
+Example:
+   remove_int(routine_id("inc_x"))
+
+
+------------------------<rest>--------------------------------
+
+Syntax: 	
+   rest(iTime)
+
+Description:	
+   Once Allegro has taken over the timer the standard delay() function will 
+   no longer work, so you should use this routine instead. The time is given 
+   in milliseconds.
+
+Comments:	
+   1000 milliseconds = 1 second.
+
+Example:
+   rest(1000)
+
+
+------------------------<install_keyboard>--------------------------------
+
+Syntax: 	
+   iRet = install_keyboard()
+
+Description:	
+   Installs the Allegro keyboard interrupt handler. Returns 0 on success.
+
+Comments:	
+   Call this before trying to use any keyboard routines.
+
+Example:	
+   integer iRet 
+   iRet = install_keyboard()
+   if iRet != 0 then 
+      -- .. failure
+   end if
+
+
+------------------------<remove_keyboard>--------------------------------
+
+Syntax: 	
+   remove_keyboard()
+
+Description:	
+   Removes the keyboard handler, returning control to the operating system. 
+   You don't normally need to bother calling this, because allegro_exit() 
+   will do it for you.
+
+Comments:	
+
+Example:	
+   remove_keyboard()
+
+
+------------------------<key>--------------------------------
+
+Syntax: 	
+   iRet = key(iKey)
+
+Description:	
+   Returns a value of 1 when the key referenced by iKey is currently pressed.
+   All keys on the keyboard have constants KEY_* defined in euAllegro.ew.
+  
+Comments:	
+
+Example:	
+   if key(KEY_SPACE) then
+      -- space has been pressed
+   end if
+
+
+------------------------<keypressed>--------------------------------
+
+Syntax: 	
+   iRet = keypressed()
+
+Description:	
+   Returns TRUE if there are keypresses waiting in the input buffer. 
+  
+Comments:	
+
+Example:	
+   if keypressed() then 
+      -- a key has been pressed 
+   end if
+
+
+------------------------<readkey>--------------------------------
+
+Syntax: 	
+   iRet = readkey()
+
+Description:	
+   Returns the next character from the keyboard buffer, in ASCII format. If 
+   the buffer is empty, it waits until a key is pressed. The low byte of the 
+   return value contains the ASCII code of the key, and the high byte the 
+   scancode. The scancode remains the same whatever the state of the shift, 
+   ctrl and alt keys, while the ASCII code is affected by shift and ctrl in
+   the normal way (shift changes case, ctrl+letter gives the position of 
+   that letter in the alphabet, eg. ctrl+A = 1, ctrl+B = 2, etc). Pressing 
+   alt+key returns only the scancode, with a zero ASCII code in the low 
+   byte.
+
+Comments:	
+
+Example:	
+   integer iRet
+   iRet = readkey()
+
+
+------------------------<clear_keybuf>--------------------------------
+
+Syntax: 	
+   clear_keybuf()
+
+Description:	
+   Empties the keyboard buffer.
+
+Comments:	
+
+Example:	
+   clear_keybuf()
+
+
+------------------------<set_gfx_mode>------------------------------------
+
+Syntax: 	
+   iRet = set_gfx_mode(iCard, iW, iH, iV_W, iV_H)
+
+Description:	
+   Switches into graphics mode. The iCard parameter should usually be 
+   GFX_AUTODETECT.
+   iW and iH are the width and height of the screen. Typical values are 320x200
+   and 640x480 iV_W and iV_H are the parameters specify the minimum virtual
+   screen size, in case you need a large virtual screen for hardware scrolling 
+   or page flipping. You should set them to zero if you don't care about the 
+   virtual screen size.
+
+Comments:	
+   By default the screen has 8 bit color depth giving 256 unique colors. 
+
+   If Allegro is unable to select an appropriate mode, set_gfx_mode() 
+   returns a negative number and stores a description of the problem in 
+   allegro_error. Otherwise it returns zero.
+
+Example:	
+   integer iRet
+   iRet = set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0)
+   if iRet = 0 then 
+      --.. failure
+   end if
+
+
+------------------------<SCREEN_W>------------------------------------
+------------------------<SCREEN_H>------------------------------------
+------------------------<VIRTUAL_W>-----------------------------------
+------------------------<VIRTUAL_H>-----------------------------------
+
+Syntax:
+   iRet = SCREEN_W()
+   iRet = SCREEN_H()
+   iRet = VIRTUAL_W()
+   iRet = VIRTUAL_H()
+
+Description:	
+   Returns the Width and height of the actual screen and the virtual
+   screen.  
+
+Comments:	
+   These are only valid after a successful call to set_gfx_mode()
+
+
+------------------------<SCREEN>------------------------------------
+
+Syntax:
+   aScreenPtr = SCREEN()
+
+Description:
+   Returns a pointer to a bitmap, sized VIRTUAL_W() x VIRTUAL_H(). 
+   This is created by set_gfx_mode(), and represents the hardware video 
+   memory. Only a part of this bitmap will actually be visible, sized 
+   SCREEN_W() x SCREEN_H(). 
+   Normally this is the top left corner of the larger virtual screen, so you 
+   can ignore the extra invisible virtual size of the bitmap if you aren't 
+   interested in hardware scrolling or page flipping. To move the visible 
+   window to other parts of the screen bitmap, call scroll_screen(). 
+   Initially the clipping rectangle will be limited to the physical screen 
+   size, so if you want to draw onto a larger virtual screen space outside 
+   this rectangle, you will need to adjust the clipping.
+
+   
+------------------------<create_bitmap>--------------------------------
+
+Syntax: 	
+   aBmp = create_bitmap(iWidth, iHeight)
+
+Description:	
+   Creates a memory bitmap sized iWidth by iHeight, and returns a pointer to 
+   it. The bitmap will have clipping turned on, and the clipping rectangle 
+   set to the full size of the bitmap. The image memory will not be cleared, 
+   so it will probably contain garbage: you should clear the bitmap before 
+   using it. This routine always uses the global pixel format, as specified 
+   by calling set_color_depth().
+
+Comments:	
+
+Example:	
+   -- create a buffer as big as the current screen
+   atom aBmp
+   aBmp = create_bitmap(SCREEN_W(), SCREEN_H())
+
+
+------------------------<bitmap_w>--------------------------------
+------------------------<bitmap_h>--------------------------------
+
+Syntax: 	
+   iWidth = bitmap_w(aBmp)
+   iHeight = bitmap_h(aBmp)
+
+Description:	
+   Returns the width and height of a specified Bitmap.
+
+Comments:	
+
+
+------------------------<destroy_bitmap>--------------------------------
+
+Syntax: 	
+   destroy_bitmap(aBmp)
+
+Description:	
+   Destroys a memory bitmap, sub-bitmap, video memory bitmap, or system 
+   bitmap when you are finished with it.
+
+Comments:	
+
+Example:	
+   destroy_bitmap(aBmp) 
+
+
+------------------------<acquire_bitmap>--------------------------------
+
+Syntax: 	
+   acquire_bitmap(aBmp)
+
+Description:	
+   Locks the specified video memory bitmap prior to drawing onto it. This 
+   does not apply to memory bitmaps, and only affects some platforms 
+   (Windows needs it, DOS does not). These calls are not strictly required, 
+   because the drawing routines will automatically acquire the bitmap before 
+   accessing it, but locking a DirectDraw surface is very slow, so you will 
+   get much better performance if you acquire the screen just once at the 
+   start of your main redraw function, and only release it when the drawing 
+   is completely finished. Multiple acquire calls may be nested, and the
+   bitmap will only be truly released when the lock count returns to zero. 
+   Be warned that DirectX programs activate a mutex lock whenever a surface 
+   is locked, which prevents them from getting any input messages, so you 
+   must be sure to release all your bitmaps before using any timer, 
+   keyboard, or other non-graphics routines!
+
+Comments:	
+
+Example:	
+   acquire_bitmap(aBmp)
+
+
+------------------------<release_bitmap>--------------------------------
+
+Syntax: 	
+   release_bitmap(aBmp)
+
+Description:	
+   Releases a bitmap that was previously locked by calling acquire_bitmap(). 
+   If the bitmap was locked multiple times, you must release it the same 
+   number of times before it will truly be unlocked.
+
+Comments:	
+
+Example:	
+   release_bitmap(aBmp)
+
+
+------------------------<acquire_screen>--------------------------------
+------------------------<release_screen>--------------------------------
+
+Syntax:
+   acquire_screen()
+   release_screen()
+
+Description:
+   Shorthand ways of writing acquire_bitmap( SCREEN() ) and 
+   release_bitmap( SCREEN() )
+
+
+------------------------<load_bitmap>--------------------------------
+
+Syntax: 	
+   aBmp = load_bitmap(sFilename, aPalette)
+
+Description:	
+   Loads a bitmap from a file, returning a pointer to a bitmap and storing 
+   the palette data in aPalette location, which should first be allocated
+   by doing a aPalette = allocate_palette().
+   You are responsible for destroying the bitmap when you are finished with 
+   it. Returns NULL on error. At present this function supports BMP, LBM, 
+   PCX, and TGA files, determining the type from the file extension. 
+   If the file contains a truecolor image, you must set the video 
+   mode or call set_color_conversion() before loading it.
+
+Comments:	
+
+Example:	
+   atom aPalette, aBitmap
+   aPalette = allocate_palette()
+   aBitmap = load_bitmap("mysha.pcx", aPalette)
+   if aBitmap = NULL then
+      -- error
+   end if
+   ...
+   -- free resources
+   destroy_bitmap(aBitmap)
+   destroy_palette(aPalette)
+
+   allegro_exit()
+
+
+------------------------<vsync>--------------------------------
+
+Syntax: 	
+   vsync()
+
+Description:
+   Waits for a vertical retrace to begin. The retrace happens when the 
+   electron beam in your monitor has reached the bottom of the screen and is 
+   moving back to the top ready for another scan. During this short period 
+   the graphics card isn't sending any data to the monitor, so you can do 
+   things to it that aren't possible at other times, such as altering the 
+   palette without causing flickering (snow). Allegro will automatically 
+   wait for a retrace before altering the palette or doing any hardware 
+   scrolling, though, so you don't normally need to bother with this 
+   function.
+
+Comments:	
+
+Example:	
+   vsync()
+
+
+------------------------<set_palette>--------------------------------
+
+Syntax: 	
+   set_palette(aPalette)
+
+Description:	
+   Sets the entire palette of 256 colors. You should pass a Palette that 
+   has been created with allocate_palette() and loaded from a load_bitmap()
+   function or has been converted from a Euphoria sequence using 
+   sequence_to_palette().
+
+Comments:	
+   You can also use one of the builtin Palettes default_palette(),
+   black_palette() or desktop_palette.
+
+Example:	
+   see load_bitmap()
+
+
+------------------------<default_palette>--------------------------------
+------------------------<black_palette>----------------------------------
+------------------------<desktop_palette>--------------------------------
+
+Syntax:
+   set_palette(default_palette)
+   set_palette(black_palette)
+   set_palette(desktop_palette)
+
+Description:
+   The default palette() is the default IBM BIOS palette. This will be 
+   automatically selected whenever you set a new graphics mode.
+
+   The black_palete() contains solid black colors, used by the fade routines.
+
+   The default_palette() is a left over from the Atari ST days where Allegro
+   originated from. 
+   The grabber and test programs use it. 
+
+Comments:	
+   None.
+
+
+------------------------<allocate_palette>--------------------------------
+
+Syntax:
+   aPalette = allocate_palette()
+
+Description:
+   This is a Euphoria only command which sets aside 256*4 bytes of RAM for
+   a C palette structure.
+   You need to allocate a palette before you do a load_bitmap().
+
+Comments:	
+   None.
+
+Example
+   See load_bitmap()
+
+
+------------------------<allocate_sequence_palette>-------------------------
+
+Syntax:
+   sPalette = allocate_sequence_palette()
+
+Description:
+   This creates a sequence of 256 {0,0,0,0} sequences that can be used to later
+   create a Palette using sequence_to_palette().
+   This would be done when you want to manipulate colours inside Palettes.
+
+Comments:	
+   None.
+
+Example
+   See euPal.exw 
+
+
+------------------------<destroy_palette>----------------------------------
+
+Syntax:
+   destroy_palette(aPalette)
+
+Description:
+   Frees the RAM used by an allocate_palette()
+
+Comments:	
+   None.
+
+Example
+   See load_bitmap()
+
+
+------------------------<sequence_to_palette>-------------------------------
+
+Syntax:
+   sequence_to_palette(sPalette, aPalette)
+
+Description:
+   Copies a palette represented as a Euphoria sequence into a palette 
+   represented as a C palette structure.
+
+Comments:
+   None.
+
+Example
+   See euPal.exw
+
+
+------------------------<palette_to_sequence>-------------------------------
+
+Syntax:
+   sPalette = palette_to_sequence(aPalette)
+
+Description:
+   Creates a Euphoria sequence representing a Palette structure that can be 
+   manipulated in Euphoria.
+   This sequence can then be manipulated and converted back to a standard
+   palette with sequence_to_palette()
+
+Comments:	
+   None.
+
+
+------------------------<put_pixel>-------------------------------
+
+Syntax:
+   put_pixel(aBmp, iX, iY, iColor)
+
+Description:
+   Writes a pixel to the specified position in the bitmap, using the current 
+   drawing mode and the bitmap's clipping rectangle.
+
+Comments:	
+   None.
+
+
+------------------------<get_pixel>-------------------------------
+
+Syntax:
+   iColor = get_pixel(aBmp, iX, iY)
+
+Description:
+   Reads a pixel from point x, y in the bitmap. Returns -1 if the point lies 
+   outside the bitmap.
+
+Comments:	
+   None.
+
+
+------------------------<vline>-------------------------------
+
+Syntax:
+   vline(aBmp, iX, iY1, iY2, iColor) 
+
+
+Description:
+   Draws a vertical line onto the bitmap, from point (x, y1) to (x, y2).
+
+Comments:	
+   None.
+
+
+------------------------<hline>-------------------------------
+
+Syntax:
+   hline(aBmp, iX1, iY, iX2, iColor) 
+
+
+Description:
+   Draws a horizontal line onto the bitmap, from point (x1, y) to (x2, y).
+
+Comments:	
+   None.
+
+------------------------<line>-------------------------------
+
+Syntax:
+   line(aBmp, iX1, iY1, iX2, iY2, iColor) 
+
+
+Description:
+   Draws a horizontal line onto the bitmap, from point (x1, y) to (x2, y).
+
+Comments:	
+   None.
+
+
+------------------------<triangle>-------------------------------
+
+Syntax:
+   triangle(aBmp, iX1, iY1, iX2, iY2, iX3, iY3, iColor) 
+
+
+Description:
+   Draws a filled triangle between the three points.
+
+Comments:	
+   None.
+
+
+------------------------<rect>-------------------------------
+
+Syntax:
+   rect(aBmp, iX1, iY1, iX2, iY2, iColor) 
+
+Description:
+   Draws an outline rectangle with the two points as its opposite corners.
+
+Comments:	
+   None.
+
+
+------------------------<rectfill>-------------------------------
+
+Syntax:
+   rectfill(aBmp, iX1, iY1, iX2, iY2, iColor) 
+
+Description:
+   Draws a solid, filled rectangle with the two points as its opposite
+   corners.
+
+Comments:	
+   None.
+
+
+------------------------<circle>-------------------------------
+
+Syntax:
+   circle(aBmp, iX, iY, iRadius, iColor) 
+
+Description:
+   Draws a circle with the specified centre and radius.
+
+Comments:	
+   None.
+
+
+------------------------<circlefill>-------------------------------
+
+Syntax:
+   circlefill(aBmp, iX, iY, iRadius, iColor) 
+
+Description:
+   Draws a filled circle with the specified centre and radius.
+
+Comments:	
+   None.
+
+
+------------------------<ellipse>-------------------------------
+
+Syntax:
+   ellipse(aBmp, iX, iY, iRadiusX, iRadiusY, iColor) 
+
+Description:
+   Draws an ellipse with the specified centre and radius.
+
+Comments:
+   None.
+
+
+------------------------<ellipsefill>-------------------------------
+
+Syntax:
+   ellipsefill(aBmp, iX, iY, iRadiusX, iRadiusY, iColor) 
+
+Description:
+   Draws a filled ellipse with the specified centre and radius.
+
+Comments:	
+   None.
+
+
+------------------------<arc>-------------------------------
+
+Syntax:
+   arc(aBmp, iX, iY, aAngle1, aAngel2, iRadius, iColour)
+
+Description:
+   Draws a circular arc with centre x, y and radius r, in an anticlockwise 
+   direction starting from the angle aAngle1 and ending when it reaches 
+   aAngle22. These values are specified with 256 equal to a full circle, 
+   64 a right angle, etc. Zero is to the right of the centre point, and 
+   larger values rotate anticlockwise from there.
+
+Comments:	
+   None.
+
+
+------------------------<floodfill>-------------------------------
+
+Syntax:
+   arc(aBmp, iX, iY, iColour)
+
+Description:
+   Floodfills an enclosed area, starting at point (x, y), with the specified 
+   color.
+
+Comments:	
+   None.
+
+
+------------------------<clear>-------------------------------
+
+Syntax:
+   clear(aBmp)
+
+Description:
+   Clears the bitmap to color 0.
+
+Comments:	
+   None.
+
+
+------------------------<clear_to_color>-------------------------------
+
+Syntax:
+   clear(aBmp, iColor)
+
+Description:
+   Clears the bitmap to the specified color.
+
+Comments:	
+   None.
+
+
+------------------------<blit>-------------------------------
+
+Syntax:
+   blit(aSourceBmp, aDestBmp, iSourceX, iSourceY
+	  iDestX, iDestY, iWidth, iHeight) 
+
+Description:
+   Copies a rectangular area of the source bitmap to the destination bitmap. 
+   The iSourceX and iSourceY parameters are the top left corner of the area 
+   to copy from the source bitmap, and iDestX and iDestY are the
+   corresponding position in the destination bitmap. This routine respects 
+   the destination clipping rectangle, and it will also clip if you try to 
+   blit from areas outside the source bitmap.
+
+   You can blit between any parts of any two bitmaps, even if the two memory 
+   areas overlap (ie. source and dest are the same, or one is sub-bitmap of 
+   the other). You should be aware, however, that a lot of SVGA cards don't 
+   provide separate read and write banks, which means that blitting from one 
+   part of the screen to another requires the use of a temporary bitmap in 
+   memory, and is therefore extremely slow. As a general rule you should 
+   avoid blitting from the screen onto itself in SVGA modes.
+
+   In mode-X, on the other hand, blitting from one part of the screen to 
+   another can be significantly faster than blitting from memory onto the 
+   screen, as long as the source and destination are correctly aligned with 
+   each other. Copying between overlapping screen rectangles is slow, but if 
+   the areas don't overlap, and if they have the same plane alignment (ie. 
+   (source_x%4) == (dest_x%4)), the VGA latch registers can be used for a 
+   very fast data transfer. To take advantage of this, in mode-X it is often 
+   worth storing tile graphics in a hidden area of video memory (using a 
+   large virtual screen), and blitting them from there onto the visible part 
+   of the screen.
+
+   If the GFX_HW_VRAM_BLIT bit in the gfx_capabilities flag is set, the 
+   current driver supports hardware accelerated blits from one part of the 
+   screen onto another. This is extremely fast, so when this flag is set it 
+   may be worth storing some of your more frequently used graphics in an 
+   offscreen portion of the video memory.
+
+   Unlike most of the graphics routines, blit() allows the source and 
+   destination bitmaps to be of different color depths, so it can be used to 
+   convert images from one pixel format to another.
+
+Comments:	
+   None.
+
+
+------------------------<masked_blit>-------------------------------
+
+Syntax:
+   masked_blit(aSourceBmp, aDestBmp, iSourceX, iSourceY
+	  iDestX, iDestY, iWidth, iHeight) 
+
+Description:
+   Like blit(), but skips transparent pixels, which are marked by a zero in 
+   256 color modes or bright pink for truecolor data (maximum red and blue, 
+   zero green). The source and destination regions must not overlap.
+
+   If the GFX_HW_VRAM_BLIT_MASKED bit in the gfx_capabilities flag is set, 
+   the current driver supports hardware accelerated masked blits from one 
+   part of the screen onto another. This is extremely fast, so when this 
+   flag is set it may be worth storing some of your more frequently used 
+   sprites in an offscreen portion of the video memory.
+
+   Warning: if the hardware acceleration flag is not set, masked_blit() will 
+   not work correctly when used with a video memory source image, and the 
+   input graphic must always be a memory bitmap!
+
+Comments:	
+   None.
+
+
+------------------------<stretch_blit>-------------------------------
+
+Syntax:
+   stretch_blit(aSourceBmp, aDestBmp, iSourceX, iSourceY, 
+	    iSourceWidth, iSourceHeight, iDestX, iDestY, 
+	    iDestWidth, iDestHeight) 
+
+Description:
+   Like blit(), except it can scale images so the source and destination 
+   rectangles don't need to be the same size. This routine doesn't do as 
+   much safety checking as the regular blit: in particular you must take 
+   care not to copy from areas outside the source bitmap, and you cannot 
+   blit between overlapping regions, ie. you must use different bitmaps for 
+   the source and the destination. Also, the source must be a memory bitmap 
+   or sub-bitmap, not the hardware screen.
+
+Comments:	
+   None.
+
+
+------------------------<masked_stretch_blit>-------------------------------
+
+Syntax:
+   masked_stretch_blit(aSourceBmp, aDestBmp, iSourceX, iSourceY, 
+	    iSourceWidth, iSourceHeight, iDestX, iDestY, 
+	    iDestWidth, iDestHeight) 
+
+Description:
+   Like stretch_blit(), but skips transparent pixels, which are marked by a 
+   zero in 256 color modes or bright pink for truecolor data (maximum red 
+   and blue, zero green). The source and destination regions must not 
+   overlap.
+
+Comments:	
+   None.
+
+
+------------------------<draw_sprite>-------------------------------
+
+Syntax:
+   draw_sprite(aSourceBmp, aDestBmp, iX, iY) 
+
+Description:
+   Draws a copy of the sprite bitmap onto the destination bitmap at the 
+   specified position. This is almost the same as blit(sprite, bmp, 0, 0, x, 
+   y, bitmap_w(sprite), bitmap_h(sprite)), but it uses a masked drawing 
+   mode where transparent pixels are skipped, so the background image will 
+   show through the masked parts of the sprite. Transparent pixels are 
+   marked by a zero in 256 color modes or bright pink for truecolor data 
+   (maximum red and blue, zero green).
+
+   If the GFX_HW_VRAM_BLIT_MASKED bit in the gfx_capabilities flag is set, 
+   the current driver supports hardware accelerated sprite drawing when the 
+   source image is a video memory bitmap or a sub-bitmap of the screen. This 
+   is extremely fast, so when this flag is set it may be worth storing some
+   of your more frequently used sprites in an offscreen portion of the video 
+   memory.
+
+   Warning: if the hardware acceleration flag is not set, draw_sprite() will 
+   not work correctly when used with a video memory source image, and the 
+   input graphic must always be a memory bitmap!
+
+   Although generally not supporting graphics of mixed color depths, as a 
+   special case this function can be used to draw 256 color source images 
+   onto truecolor destination bitmaps, so you can use palette effects on 
+   specific sprites within a truecolor program.
+
+Comments:	
+   None.
+
+
+------------------------<draw_sprite_v_flip>-------------------------------
+------------------------<draw_sprite_h_flip>-------------------------------
+------------------------<draw_sprite_vh_flip>------------------------------
+
+Syntax:
+   draw_sprite_v_flip(aSourceBmp, aDestBmp, iX, iY) 
+   draw_sprite_h_flip(aSourceBmp, aDestBmp, iX, iY) 
+   draw_sprite_vh_flip(aSourceBmp, aDestBmp, iX, iY) 
+
+Description:
+   These are like draw_sprite(), but they flip the image about the vertical, 
+   horizontal, or diagonal, axis. This produces exact mirror images, which 
+   is not the same as rotating the sprite (and it is a lot faster than the 
+   rotation routine). The sprite must be a memory bitmap.
+
+Comments:
+   None.
+
+
+------------------------<draw_trans_sprite>------------------------------
+
+Syntax:
+   draw_trans_sprite(aSourceBmp, aDestBmp, iX, iY)
+
+Description:
+   Uses the global color_map table or truecolor blender functions to overlay 
+   the sprite on top of the existing image. This must only be used after you 
+   have set up the color mapping table (for 256 color modes) or blender 
+   functions (for truecolor modes). Because it involves reading as well as 
+   writing the bitmap memory, translucent drawing is very slow if you draw 
+   directly to video RAM, so wherever possible you should use a memory 
+   bitmap instead. The bitmap and sprite must normally be in the same color 
+   depth, but as a special case you can draw 32 bit RGBA format sprites onto 
+   any hicolor or truecolor bitmap, as long as you call set_alpha_blender() 
+   first, and you can draw 8 bit alpha images onto a 32 bit RGBA 
+   destination, as long as you call set_write_alpha_blender() first.
+
+Comments:
+   None.
+
+
+------------------------<rotate_sprite>------------------------------
+
+Syntax:
+   rotate_sprite(aSourceBmp, aDestBmp, iX, iY, aAngle) 
+
+Description:
+   Draws the sprite image onto the bitmap at the specified position, 
+   rotating it by the specified angle. The angle is nuber is in the same 
+   format used by the fixed point trig routines, with 256 equal to a full 
+   circle, 64 a right angle, etc. The sprite must be a memory bitmap.
+
+Comments:
+   None.
+
+
+------------------------<rotate_scaled_sprite>------------------------------
+
+Syntax:
+   rotate_scaled_sprite(aSourceBmp, aDestBmp, iX, iY, aAngle, aScale) 
+
+Description:
+   Like rotate_sprite(), but stretches or shrinks the image at the same time 
+   as rotating it.
+
+Comments:
+   None.
+
+
+------------------------<rotate_sprite_v_flip>------------------------------
+
+Syntax:
+   rotate_sprite(aSourceBmp, aDestBmp, iX, iY, aAngle) 
+
+Description:
+   Like rotate_sprite, but also flips the image vertically.  To flip 
+   horizontally, use this routine but add fixtoi(128) to the angle.  To flip
+   in both directions, use rotate_sprite() and add fixtoi(128) to its angle.
+
+Comments:
+   None.
+
+
+------------------------<stretch_sprite>------------------------------
+
+Syntax:
+   stretch_sprite(aSourceBmp, aDestBmp, iX, iY, iWidth, iHeight) 
+
+Description:
+   Draws the sprite image onto the bitmap at the specified position, 
+   stretching it to the specified width and height. The difference between 
+   stretch_sprite() and stretch_blit() is that stretch_sprite() masks out 
+   transparent pixels, which are marked by a zero in 256 color modes or 
+   bright pink for truecolor data (maximum red and blue, zero green).
+
+Comments:
+   None.
+
+
+------------------------<FONT>------------------------------
+
+Syntax:
+   FONT()
+
+Description:
+   A simple 8x8 fixed size font (the mode 13h BIOS default). If you want to 
+   alter the font used by the GUI routines, change this to point to one of 
+   your own fonts. This font contains the standard ASCII (U+20 to U+7F), 
+   Latin-1 (U+A1 to U+FF), and Latin Extended-A (U+0100 to U+017F) character 
+   ranges.
+
+Comments:
+   None.
+
+
+------------------------<text_mode>------------------------------
+
+Syntax:
+   text_mode(iMode)
+
+Description:
+   Sets the mode in which text will be drawn. If mode is zero or positive, 
+   text output will be opaque and the background of the characters will be 
+   set to color #mode. If mode is negative, text will be drawn transparently 
+   (ie. the background of the characters will not be altered). The default 
+   is a mode of zero.
+
+Comments:
+   None.
+
+
+------------------------<textout>------------------------------
+
+Syntax:
+   textout(aBmp, aFont, sMessage, iX, iY, iColor)
+
+Description:
+   Writes the string sMessage onto the bitmap at position x, y, using the 
+   current text mode and the specified font and foreground color. If the 
+   color is -1 and a color font is in use, it will be drawn using the colors
+   from the original font bitmap (the one you imported into the grabber 
+   program), which allows multicolored text output.
+
+Comments:
+   None.
+
+
+------------------------<textout_centre>------------------------------
+
+Syntax:
+   textout_center(aBmp, aFont, sMessage, iX, iY, iColor)
+
+Description:
+   Like textout(), but interprets the x coordinate as the centre rather than 
+   the left edge of the string.
+
+Comments:
+   None.
+
+
+------------------------<textout_right>------------------------------
+
+Syntax:
+   textout_right(aBmp, aFont, sMessage, iX, iY, iColor)
+
+Description:
+   Like textout(), but interprets the x coordinate as the right rather than 
+   the left edge of the string.
+
+Comments:
+   None.
+
+
+------------------------<textprintf>------------------------------
+
+Syntax:
+   textprintf(aBmp, aFont, iX, iY, iColor, sFormatMessage, sArguments)
+
+Description:
+   Formatted text output, using a printf() style format string.
+
+Comments:
+   textprintf is emulated using textout where sMesage is 
+   sprintf(sFormatMessage, sArguments).
+
+
+------------------------<textprintf_centre>------------------------------
+
+Syntax:
+   textprintf_centre(aBmp, aFont, iX, iY, iColor, sFormatMessage, sArguments)
+
+Description:
+   Like textprintf(), but interprets the x coordinate as the centre rather 
+   than the left edge of the string.
+
+Comments:
+   textprintf_centre is emulated using textout where sMesage is 
+   sprintf(sFormatMessage, sArguments).
+
+
+------------------------<textprintf_right>------------------------------
+
+Syntax:
+   textprintf_right(aBmp, aFont, iX, iY, iColor, sFormatMessage, sArguments)
+
+Description:
+   Like textprintf(), but interprets the x coordinate as the right rather 
+   than the left edge of the string.
+
+Comments:
+   textprintf_right is emulated using textout where sMesage is 
+   sprintf(sFormatMessage, sArguments).
+
+
+------------------------<text_length>------------------------------
+
+Syntax:
+   iLength = text_length(aFont, sString)
+
+Description:
+   Returns the length (in pixels) of a string in the specified font.
+
+Comments:
+   None.
+
+
+------------------------<text_height>------------------------------
+
+Syntax:
+   iLength = text_height(aFont)
+
+Description:
+   Returns the height (in pixels) of the specified font.
+
+Comments:
+   None.
+
+
+------------------------<destroy_font>------------------------------
+
+Syntax:
+   destroy_font(aFont)
+
+Description:
+   Frees the memory being used by a font structure.
+
+Comments:
+   None.
+
+
+------------------------<install_sound>------------------------------
+
+Syntax:
+   iRet = install_sound(iDigi, iMidi, sCfgPath)
+
+Description:
+   Initialises the sound module. You should normally pass DIGI_AUTODETECT
+   and MIDI_AUTODETECT as the driver parameters to this function, in which 
+   case Allegro will read hardware settings from the current configuration 
+   file. This allows the user to select different values with the setup 
+   utility: see the config section for details. Alternatively, see the 
+   platform specific documentation for a list of the available drivers. The 
+   cfg_path parameter is only present for compatibility with previous 
+   versions of Allegro, and has no effect on anything. Returns zero if the 
+   sound is successfully installed, and -1 on failure. If it fails it will 
+   store a description of the problem in allegro_error.
+
+Comments:
+   None.
+
+Example:
+   integer iRet
+   iRet = install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "")
+   if iRet != 0 then
+      -- error
+   end if
+
+
+------------------------<remove_sound>------------------------------
+
+Syntax:
+   remove_sound()
+
+Description:
+   Cleans up after you are finished with the sound routines. You don't 
+   normally need to call this, because allegro_exit() will do it for you.
+
+Comments:
+   None.
+
+
+------------------------<set_volume>------------------------------
+
+Syntax:
+   set_volume(iDigiVolume, iMidiVolume)
+
+Description:
+   Alters the global sound output volume. Specify volumes for both digital 
+   samples and MIDI playback, as integers from 0 to 255, or pass a negative 
+   value to leave one of the settings unchanged. If possible this routine 
+   will use a hardware mixer to control the volume, otherwise it will tell 
+   the sample and MIDI players to simulate a mixer in software.
+
+Comments:
+   None.
+
+
+------------------------<detect_digi_driver>------------------------------
+
+Syntax:
+   iMaxVoices = detect_digi_driver(iDriverID)
+
+Description:
+   Detects whether the specified digital sound device is available. Returns 
+   the maximum number of voices that the driver can provide, or zero if the 
+   hardware is not present. This function must be called _before_ 
+   install_sound().
+
+Comments:
+   None.
+
+
+------------------------<detect_midi_driver>------------------------------
+
+Syntax:
+   iMaxVoices = detect_midi_driver(iDriverID)
+
+Description:
+   Detects whether the specified MIDI sound device is available. Returns the 
+   maximum number of voices that the driver can provide, or zero if the 
+   hardware is not present. There are two special-case return values that 
+   you should watch out for: if this function returns -1 it is a 
+   note-stealing driver (eg. DIGMID) that shares voices with the current 
+   digital sound driver, and if it returns 0xFFFF it is an external device 
+   like an MPU-401 where there is no way to determine how many voices are
+   available. This function must be called _before_ install_sound(). 
+
+Comments:
+   None.
+
+
+------------------------<reserve_voices>------------------------------
+
+Syntax:
+   reserve_voice(iDigiVoices, iMidiVoices)
+
+Description:
+   Call this function to specify the number of voices that are to be used by 
+   the digital and MIDI sound drivers respectively. This must be done 
+   _before_ calling install_sound(). If you reserve too many voices, 
+   subsequent calls to install_sound() will fail. How many voices are 
+   available depends on the driver, and in some cases you will actually get 
+   more than you reserve (eg. the FM synth drivers will always provide 9 
+   voices on an OPL2 and 18 on an OPL3, and the SB digital driver will round 
+   the number of voices up to the nearest power of two). Pass negative 
+   values to restore the default settings. You should be aware that the 
+   sound quality is usually inversely related to how many voices you use, so 
+   don't reserve any more than you really need.
+
+Comments:
+   None.
+
+
+------------------------<load_sample>------------------------------
+
+Syntax:
+   aSample = load_sample(sFilename)
+
+Description:
+   Loads a sample from a file, returning a pointer to it, or NULL on error. 
+   At present this function supports both mono and stereo WAV and mono VOC 
+   files, in 8 or 16 bit formats.
+
+Comments:
+   None.
+
+Example:
+   see euSample.exw
+
+
+------------------------<destroy_sample>------------------------------
+
+Syntax:
+   destroy_sample(aSample)
+
+Description:
+   Destroys a sample structure when you are done with it. It is safe to call 
+   this even when the sample might be playing, because it checks and will 
+   kill it off if it is active.
+
+Comments:
+   None.
+
+Example:
+   see euSample.exw
+
+
+------------------------<play_sample>------------------------------
+
+Syntax:
+   play_sample(aSample, iVol, iPan, iFreq, iLoop)
+
+Description:
+   Triggers a sample at the specified volume, pan position, and frequency. 
+   The volume and pan range from 0 (min/left) to 255 (max/right). Frequency 
+   is relative rather than absolute: 1000 represents the frequency that the 
+   sample was recorded at, 2000 is twice this, etc. If the loop flag is set, 
+   the sample will repeat until you call stop_sample(), and can be 
+   manipulated while it is playing by calling adjust_sample().
+
+Comments:
+   None.
+
+Example:
+   see euSample.exw
+
+
+------------------------<adjust_sample>------------------------------
+
+Syntax:
+   adjust_sample(aSample, iVol, iPan, iFreq, iLoop)
+
+Description:
+   Alters the parameters of a sample while it is playing (useful for 
+   manipulating looped sounds). You can alter the volume, pan, and 
+   frequency, and can also clear the loop flag, which will stop the sample 
+   when it next reaches the end of its loop. If there are several copies of 
+   the same sample playing, this will adjust the first one it comes across. 
+   If the sample is not playing it has no effect.
+
+Comments:
+   None.
+
+
+------------------------<stop_sample>------------------------------
+
+Syntax:
+   stop_sample(aSample)
+
+Description:
+   Kills off a sample, which is required if you have set a sample going in 
+   looped mode. If there are several copies of the sample playing, it will 
+   stop them all.
+
+Comments:
+   None.
+
+
+------------------------<load_midi>------------------------------
+
+Syntax:
+   aMidi = load_midi(sFilename)
+
+Description:
+   Loads a MIDI file (handles both format 0 and format 1), returning a 
+   pointer to a MIDI structure, or NULL on error.
+
+Comments:
+   None.
+
+Example:
+   See euMidi.exw
+
+
+------------------------<destroy_midi>------------------------------
+
+Syntax:
+   destroy_midi(aMidi)
+
+Description:
+   Destroys a MIDI structure when you are done with it. It is safe to call 
+   this even when the MIDI file might be playing, because it checks and will 
+   kill it off if it is active.
+
+Comments:
+   None.
+
+Example:
+   See euMidi.exw
+
+
+------------------------<play_midi>------------------------------
+
+Syntax:
+   iRet = play_midi(aMidi, iLoop)
+
+Description:
+   Starts playing the specified MIDI file, first stopping whatever music was 
+   previously playing. If the loop flag is set, the data will be repeated 
+   until replaced with something else, otherwise it will stop at the end of 
+   the file. Passing a NULL pointer will stop whatever music is currently
+   playing. Returns non-zero if an error occurs (this may happen if a 
+   patch-caching wavetable driver is unable to load the required samples, or 
+   at least it might in the future when somebody writes some patch-caching 
+   wavetable drivers :-)
+
+Comments:
+   None.
+
+Example:
+   See euMidi.exw
+
+
+------------------------<play_looped_midi>------------------------------
+
+Syntax:
+   iRet = play_looped_midi(aMidi, iLoopStart, iLoopEnd)
+
+Description:
+   Starts playing a MIDI file with a user-defined loop position. When the 
+   player reaches the loop end position or the end of the file (loop_end may 
+   be -1 to only loop at EOF), it will wind back to the loop start point. 
+   Both positions are specified in the same beat number format as the 
+   midi_pos variable.
+
+Comments:
+   None.
+
+
+------------------------<stop_midi>------------------------------
+
+Syntax:
+   stop_midi()
+
+Description:
+   Stops whatever music is currently playing. This is the same thing as 
+   calling play_midi(NULL, FALSE).
+
+Comments:
+   None.
+
+
+------------------------<midi_pause>------------------------------
+
+Syntax:
+   midi_pause()
+
+Description:
+   Pauses the MIDI player.
+
+Comments:
+   None.
+
+
+------------------------<midi_resume>------------------------------
+
+Syntax:
+   midi_resume()
+
+Description:
+   Resumes playback of a paused MIDI file.
+
+Comments:
+   None.
+
+
+------------------------<load_datafile>------------------------------
+
+Syntax:
+   aDataFile = load_datafile(sFilename)
+
+Description:
+   Loads a datafile into memory, and returns a pointer to it, or NULL on 
+   error. If the datafile has been encrypted, you must first use the 
+   packfile_password() function to set the appropriate key. See grabber.txt 
+   for more information. If the datafile contains truecolor graphics, you 
+   must set the video mode or call set_color_conversion() before loading it.
+
+Comments:
+   None.
+
+Example:
+   See euData.exw
+
+
+------------------------<get_datafile_dat>------------------------------
+
+Syntax:
+   aData = get_datafile_dat(aDataFile, iOffset)
+
+Description:
+   This returns a pointer to the actual data contained in a datafile.
+   For aData can be used to Blit a sprite to the screen, play a sample or
+   anywhere else where a pointer to a structure can be used.
+
+Comments:
+   None.
+
+Example:
+   See euData.exw
+
+
+------------------------<alert>------------------------------
+
+Syntax:
+   iRet = alert(sMsg1, sMsg2, sMsg3, sButton1, sButton2, iC1, iC2)
+
+Description:
+   Displays a popup alert box, containing three lines of text (sMsg1-sMsg3),
+   and with either one or two buttons. The text for these buttons is passed
+   in b1 and b2 (b2 may be NULL), and the keyboard shortcuts in c1 and c2.
+   Returns 1 or 2 depending on which button was clicked. If the alert is
+   dismissed by pressing ESC when ESC is not one of the keyboard shortcuts,
+   it treats it as a click on the second button (this is consistent with the
+   common "Ok", "Cancel" alert).
+
+Comments:
+   None.
+
+
+
+
+

@@ -1,0 +1,399 @@
+without warning
+include euallegro.ew as allegro
+include misc.e
+include vector2.e
+include map2.e
+include database.e
+
+
+atom buffer
+atom the_palette
+integer ret
+integer mousex,mousey
+integer window_width,window_height
+integer view_left,view_top
+integer room_width,room_height
+integer fps1,fps2
+atom timer1
+window_width=640
+window_height=500
+view_left=0
+view_top=0
+room_width=640
+room_height=500
+fps1=0
+fps2=0
+timer1=0
+mousex=0
+mousey=0
+
+function check_bb_collision_general(atom x1,atom y1,integer w1,integer h1,atom x2,atom y2,integer w2,integer h2) 
+  return( not( ((x1)>=(x2)+(w2)) or ((x2)>=(x1)+(w1)) or  ((y1)>=(y2)+(h2)) or ((y2)>=(y1)+(h1)) ))
+end function
+
+integer hole_x,hole_y
+
+
+
+the_palette = allocate_palette()
+ret = allegro_init()
+ret = install_timer()
+ret = install_keyboard()
+ret = install_mouse()
+ret = reserve_voices (16, -1)
+ret = set_window_close_button(1)
+ret= install_sound (DIGI_AUTODETECT, MIDI_AUTODETECT, "")
+set_color_depth(16)
+
+set_window_title("new")
+
+  ret = set_gfx_mode(GFX_AUTODETECT_WINDOWED, window_width, window_height, 0,0)
+--ret = set_gfx_mode(GFX_AUTODETECT_FULLSCREEN, 800, 600, 0,0)
+
+function rgb( integer r, integer g, integer b )
+    --return b + g * 256 + r * 65536
+    return makecol(r,g,b)
+end function
+
+
+--images&= load_bitmap("images\\back.bmp", the_palette)
+
+atom golfball_gfx
+golfball_gfx=load_bitmap("white ball.bmp", the_palette)
+atom golfclub_gfx
+golfclub_gfx=load_bitmap("golf club rotated.bmp", the_palette)
+atom cursor_gfx
+cursor_gfx=load_bitmap("hand.bmp", the_palette)
+
+set_palette(the_palette)
+buffer=create_bitmap(room_width,room_height)
+
+
+
+integer ball_moveing
+ball_moveing=0
+integer cue_direction,cue_speed
+
+
+cue_direction=100
+cue_speed=1
+
+
+object junk
+junk = {{},{}}
+for j = 360 to 0 by -1 do
+    junk[1] = append(junk[1], sin(j*PI/180) )
+    junk[2] = append(junk[2], cos(j*PI/180) )
+end for
+constant sin_loTRUE2up = junk[1], cos_loTRUE2up = junk[2]
+
+function point_direction(atom x1,atom y1 , atom x2, atom y2)
+    atom angle, x, y
+    x = x1-x2
+    y = y1-y2
+
+    if y then 
+      angle = 90-(arctan(x/y) *180/ PI)
+    else 
+      if x1>x2 then
+        angle=180
+      elsif x1<x2 then
+        angle=0
+      else
+        angle=0
+      end if
+    end if
+
+    if y > 0 then 
+      angle -= 180 
+    end if
+
+    if angle >0  then
+      angle-=360
+    end if
+
+    return floor(-angle)
+end function
+
+function point_distance(atom x1,atom y1 , atom x2, atom y2)
+    atom x, y
+    x = power(floor(x1) - floor(x2), 2)
+    y = power(floor(y1) - floor(y2), 2)
+    return floor(sqrt(x + y))
+end function
+
+function abs(atom x)
+    if x < 0 then
+        x = -x
+    end if
+    return x
+end function--abs
+
+constant WIDTH = 640, HEIGHT = 480
+constant gravity = {0,0}
+constant friction = 0.01
+constant bounce = 1
+
+sequence Balls, Obstacles
+Balls={}
+Obstacles={}
+
+atom background
+background=0
+
+integer level
+level=0
+
+function get_file_fullname_part(sequence fname)
+    for i=length(fname) to 1 by -1 do
+    	if fname[i]='\\' then
+    	   return fname[i+1..length(fname)]
+    	end if
+    end for
+	--return ""
+end function
+
+procedure load_level(integer level)
+sequence fname,data,background_filename
+  fname="levels\\golf"&sprint(level)&".map"
+
+  if db_open(fname, DB_LOCK_NO) != DB_OK then
+  end if
+
+  if db_select_table("data") != DB_OK then
+    --myfatal("couldn't select table\n")
+  end if
+  data=db_record_data( db_find_key("world_lines_list") )
+  background_filename=db_record_data( db_find_key("world_background_filename") )
+  db_close()
+
+  if length(background_filename) then
+    --puts(1,get_file_fullname_part(background_filename))
+    background=load_bitmap(get_file_fullname_part(background_filename), the_palette)
+  end if
+
+  Balls={}
+  Obstacles={}
+
+  for i=1 to length(data) do
+     Obstacles&={newLine({data[i][1],data[i][2]},{data[i][3],data[i][4]},{0,0},bounce)}
+  end for
+
+  
+
+  if level=0 then
+    Balls &= { newBall({57,170},7,{0,0},bounce,{BALL_WHITE,WHITEBALL})}
+    hole_x=350
+    hole_y=160
+  elsif level=1 then
+    Balls &= { newBall({57,170},7,{0,0},bounce,{BALL_WHITE,WHITEBALL})}
+    hole_x=309
+    hole_y=81
+  elsif level=2 then
+    Balls &= { newBall({57,170},7,{0,0},bounce,{BALL_WHITE,WHITEBALL})}
+    hole_x=339
+    hole_y=120
+  end if
+end procedure
+
+load_level(0)
+
+
+function real(sequence string)
+sequence temp
+temp=value(string)
+return temp[2]
+end function
+
+
+integer time1
+time1=0
+
+integer game_end
+game_end=0
+function game_exit()
+  game_end=1
+  return 1
+end function 
+set_window_close_hook(routine_id("game_exit"))
+
+
+
+
+procedure draw_obstacles()
+  for i=1 to length(Obstacles) do
+    allegro:line(buffer, Obstacles[i][1][1], Obstacles[i][1][2], Obstacles[i][2][1], Obstacles[i][2][2], rgb(255,0,0))
+  end for
+
+  draw_sprite(buffer, golfball_gfx , floor(Balls[1][POS][X])-7, floor(Balls[1][POS][Y])-7)
+end procedure
+
+
+
+constant club_max_distance=30
+constant club_min_distance=-15
+
+integer club_selecting,club_distance,club_direction,club_image_single
+atom club_x,club_y
+club_selecting=0
+club_distance=0
+club_direction=0
+club_image_single=0
+club_x=0
+club_y=0
+
+
+
+
+integer dir,found
+atom speed
+
+speed=0
+
+sequence speed_list
+speed_list={0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6}
+
+procedure compute_speed()
+  integer distance
+  distance=point_distance(Balls[1][1][1]-7,Balls[1][1][2]-7,mousex, mousey)
+  if distance>club_max_distance+15 then
+    distance=club_max_distance+15
+  end if
+  speed=floor(distance/4)
+  if speed>=1 then
+    speed=speed_list[speed]
+  end if
+end procedure
+
+
+procedure loop()
+
+mousex=view_left+mouse_x()
+mousey=view_top+mouse_y()
+
+fps1+=1
+
+if timer1<time() then
+  timer1=time()+1
+  fps2=fps1
+  fps1=0
+end if
+
+time1+=1
+if time1>6 then
+
+ if key(KEY_ESC) then
+   time1=0
+   game_end=1
+ end if
+
+end if
+
+  clear_bitmap(buffer)
+
+  if background then
+    blit(background,buffer,0,0,0,0,bitmap_w(background),bitmap_h(background))
+  end if
+  
+  --textout_ex(buffer,font, sprint(fps2)&"  "&sprint(wait), view_left+20, view_top+20, rgb(255,255,255) ,-1)
+  --textout_ex(buffer,font, sprint(fps2), view_left+20, view_top+20, rgb(255,255,255) ,-1)
+  
+  dir=point_direction(Balls[1][1][1],Balls[1][1][2] , mousex, mousey)
+  --cue_direction=warp_between2(1, 360, dir+180)
+
+  if and_bits(mouse_b(),1) and club_selecting=0 and ball_moveing=0 then
+    club_selecting=1
+  end if
+
+  if and_bits(mouse_b(),1)=0 and club_selecting=1 and ball_moveing=0 then
+    compute_speed()
+    Balls[1][3]={speed*cos_loTRUE2up[club_direction+1],speed*sin_loTRUE2up[club_direction+1]}
+    ball_moveing=1
+    club_selecting=0
+  end if
+
+  --club_selecting=1
+  if club_selecting=1 and ball_moveing=0 then
+    club_direction=point_direction(mousex, mousey,Balls[1][1][1],Balls[1][1][2])
+    club_distance=point_distance(Balls[1][1][1]-7,Balls[1][1][2]-7,mousex, mousey)-25
+    club_image_single=floor(club_direction/10)
+    --?club_distance
+    if club_distance<club_min_distance then
+      club_distance=club_min_distance
+    end if
+    if club_distance>club_max_distance then
+      club_distance=club_max_distance
+    end if
+    club_x=floor(Balls[1][1][1]-(club_distance*cos_loTRUE2up[club_direction+1]))
+    club_y=floor(Balls[1][1][2]-(club_distance*sin_loTRUE2up[club_direction+1]))
+
+    masked_blit(golfclub_gfx,buffer, (96*club_image_single), 0,club_x-48, club_y-48, 96, 96)
+    dir=club_direction
+  end if
+
+  if ball_moveing=1 then
+    Balls = moveBalls(Balls, Obstacles, gravity, friction)
+    if check_bb_collision_general(Balls[1][1][1]-7,Balls[1][1][2]-7,7,7,hole_x,hole_y,9,9) then
+      ball_moveing=0
+      level+=1
+      if level<=2 then
+        load_level(level)
+      end if
+    end if
+  end if
+
+  found=0
+  if abs(Balls[1][3][1])>0.6 or abs(Balls[1][3][2])>0.6 then
+    found=1
+  end if
+
+  if found=0 and ball_moveing=1 then
+    ball_moveing=0
+    Balls[1][3][1]=0
+    Balls[1][3][2]=0
+  end if
+
+  
+
+  draw_obstacles()
+  compute_speed()
+
+  if club_selecting=1 and ball_moveing=0 then
+    allegro:line(buffer, floor(Balls[1][POS][X]), floor(Balls[1][POS][Y]), 
+    floor(Balls[1][POS][X]+(speed*4)*cos_loTRUE2up[dir+1]), floor(Balls[1][POS][Y]+(speed*4)*sin_loTRUE2up[dir+1]), rgb(255,0,0))
+  end if
+
+  
+  textout_ex(buffer,font, sprint(fps2)&"  "&sprint(speed) ,view_left+20, view_top+20, rgb(255,255,255),-1 )
+
+  putpixel(buffer,floor(Balls[1][POS][X]),floor(Balls[1][POS][Y]),rgb(0,255,255))
+  
+  draw_sprite(buffer, cursor_gfx , mousex-5,mousey)
+  blit(buffer,screen,view_left,view_top,0,0,window_width,window_height)
+
+
+end procedure
+
+
+
+integer iRet,r_id
+function game_step()
+      loop()
+      return 1
+end function
+
+r_id=routine_id("game_step")
+iRet = install_int(r_id, 30)
+
+while 1 do
+  if game_end=1 then
+    remove_int(r_id)
+    --remove_timer()
+    exit
+  end if
+end while
+
+
+destroy_palette(the_palette)
+destroy_bitmap(buffer)
+--allegro_exit()
